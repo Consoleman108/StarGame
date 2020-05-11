@@ -26,8 +26,6 @@ public class BaseScreen implements Screen, InputProcessor {
 
     private Vector2 touch;
 
-    private Spaceship spaceship;
-
     @Override
     public void show() {
         Gdx.input.setInputProcessor(this);
@@ -106,7 +104,6 @@ public class BaseScreen implements Screen, InputProcessor {
     }
 
     public boolean touchDown(Vector2 touch, int pointer, int button) {
-        spaceship.touchDown(touch, pointer, button);
         System.out.println("touchDown touch.x = " + touch.x + " touch.y = " + touch.y);
         return false;
     }

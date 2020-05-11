@@ -2,6 +2,7 @@ package ru.geekbrains.screen;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.Vector2;
 
 import javax.xml.soap.Text;
 
@@ -51,4 +52,14 @@ public class MenuScreen extends BaseScreen {
         super.dispose();
     }
 
+    @Override
+    public boolean touchDown(Vector2 touch, int pointer, int button) {
+        spaceship.touchDown(touch, pointer, button);
+        return super.touchDown(touch, pointer, button);
+    }
+
+    @Override
+    public boolean touchUp(Vector2 touch, int pointer, int button) {
+        return super.touchUp(touch, pointer, button);
+    }
 }
