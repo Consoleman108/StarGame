@@ -1,7 +1,6 @@
 package ru.geekbrains.sprite;
 
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 
 import ru.geekbrains.base.ScaledButton;
@@ -11,14 +10,12 @@ import ru.geekbrains.screen.GameScreen;
 public class ButtonPlay extends ScaledButton {
 
     private final Game game;
-    private Music musicMenuScreen;
 
     private static final float MARGIN = 0.05f;
 
-    public ButtonPlay(TextureAtlas atlas, Game game, Music musicMenuScreen) {
+    public ButtonPlay(TextureAtlas atlas, Game game) {
         super(atlas.findRegion("btPlay"));
         this.game = game;
-        this.musicMenuScreen = musicMenuScreen;
     }
 
     @Override
@@ -30,7 +27,6 @@ public class ButtonPlay extends ScaledButton {
 
     @Override
     public void action() {
-        musicMenuScreen.stop();
         game.setScreen(new GameScreen());
     }
 }

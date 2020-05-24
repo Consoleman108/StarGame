@@ -1,13 +1,10 @@
 package ru.geekbrains.screen;
 
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Vector2;
 
-import ru.geekbrains.audio.Sound;
 import ru.geekbrains.base.BaseScreen;
 import ru.geekbrains.math.Rect;
 import ru.geekbrains.sprite.Background;
@@ -24,7 +21,6 @@ public class MenuScreen extends BaseScreen {
     private ButtonExit buttonExit;
     private ButtonPlay buttonPlay;
     private Star[] stars;
-    private Music music;
 
     public MenuScreen(Game game) {
         this.game = game;
@@ -33,21 +29,15 @@ public class MenuScreen extends BaseScreen {
     @Override
     public void show() {
         super.show();
-
-        music = Gdx.audio.newMusic(Gdx.files.internal("sound/menu.mp3"));
-        music.setLooping(true);
-        music.play();
-
         bg = new Texture("textures/bg.png");
         background = new Background(bg);
         atlas = new TextureAtlas("textures/menuAtlas.tpack");
         buttonExit = new ButtonExit(atlas);
-        buttonPlay = new ButtonPlay(atlas, game, music);
+        buttonPlay = new ButtonPlay(atlas, game);
         stars = new Star[256];
         for (int i = 0; i < stars.length; i++) {
             stars[i] = new Star(atlas);
         }
-
     }
 
     @Override
@@ -72,7 +62,6 @@ public class MenuScreen extends BaseScreen {
         bg.dispose();
         atlas.dispose();
         super.dispose();
-        music.dispose();
     }
 
     @Override
