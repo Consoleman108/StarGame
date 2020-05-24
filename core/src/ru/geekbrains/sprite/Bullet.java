@@ -1,7 +1,5 @@
 package ru.geekbrains.sprite;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 
@@ -14,13 +12,10 @@ public class Bullet extends Sprite {
     private Vector2 v;
     private int damage;
     private Sprite owner;
-    private Music sfx;
 
     public Bullet() {
         regions = new TextureRegion[1];
         v = new Vector2();
-        sfx = Gdx.audio.newMusic(Gdx.files.internal("sound/sfx.mp3"));
-        sfx.setVolume(0.3f);
     }
 
     @Override
@@ -55,13 +50,5 @@ public class Bullet extends Sprite {
 
     public Sprite getOwner() {
         return owner;
-    }
-
-    public void playSoundShot() {
-        sfx.play();
-    }
-
-    public void stopSoundShot() {
-        sfx.stop();
     }
 }
