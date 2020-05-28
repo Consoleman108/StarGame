@@ -6,17 +6,25 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Vector2;
 
+import java.util.List;
+
 import ru.geekbrains.base.BaseScreen;
 import ru.geekbrains.math.Rect;
 import ru.geekbrains.pool.BulletPool;
 import ru.geekbrains.pool.EnemyPool;
 import ru.geekbrains.pool.ExplosionPool;
 import ru.geekbrains.sprite.Background;
+import ru.geekbrains.sprite.Bullet;
+import ru.geekbrains.sprite.ButtonNewGame;
+import ru.geekbrains.sprite.Enemy;
+import ru.geekbrains.sprite.GameOver;
 import ru.geekbrains.sprite.MainShip;
 import ru.geekbrains.sprite.Star;
 import ru.geekbrains.utils.EnemyEmitter;
 
 public class GameScreen extends BaseScreen {
+
+    private enum State {PLAYING, GAME_OVER}
 
     private Texture bg;
     private Background background;
@@ -28,6 +36,9 @@ public class GameScreen extends BaseScreen {
     private ExplosionPool explosionPool;
     private Music music;
     private EnemyEmitter enemyEmitter;
+    private State state;
+    private GameOver gameOver;
+    private ButtonNewGame buttonNewGame;
 
     @Override
     public void show() {
@@ -44,15 +55,20 @@ public class GameScreen extends BaseScreen {
         enemyPool = new EnemyPool(bulletPool, explosionPool, worldBounds);
         mainShip = new MainShip(atlas, bulletPool, explosionPool);
         enemyEmitter = new EnemyEmitter(atlas, enemyPool);
+        gameOver = new GameOver(atlas);
+        buttonNewGame = new ButtonNewGame(atlas, this);
+
         music = Gdx.audio.newMusic(Gdx.files.internal("sound/game.mp3"));
         music.setLooping(true);
         music.play();
+        state = State.PLAYING;
     }
 
     @Override
     public void render(float delta) {
         super.render(delta);
         update(delta);
+        checkCollision();
         free();
         draw();
     }
@@ -65,6 +81,8 @@ public class GameScreen extends BaseScreen {
         }
         mainShip.resize(worldBounds);
         enemyEmitter.resize(worldBounds);
+        gameOver.resize(worldBounds);
+        buttonNewGame.resize(worldBounds);
     }
 
     @Override
@@ -81,25 +99,39 @@ public class GameScreen extends BaseScreen {
 
     @Override
     public boolean keyDown(int keycode) {
-        mainShip.keyDown(keycode);
+        if (state == State.PLAYING) {
+            mainShip.keyDown(keycode);
+        }
         return false;
     }
 
     @Override
     public boolean keyUp(int keycode) {
-        mainShip.keyUp(keycode);
+        if (state == State.PLAYING) {
+            mainShip.keyUp(keycode);
+        }
         return false;
     }
 
     @Override
     public boolean touchDown(Vector2 touch, int pointer, int button) {
-        mainShip.touchDown(touch, pointer, button);
+        if (state == State.PLAYING) {
+            mainShip.touchDown(touch, pointer, button);
+        }
+        if (state == State.GAME_OVER) {
+            buttonNewGame.touchDown(touch, pointer, button);
+        }
         return false;
     }
 
     @Override
     public boolean touchUp(Vector2 touch, int pointer, int button) {
-        mainShip.touchUp(touch, pointer, button);
+        if (state == State.PLAYING) {
+            mainShip.touchUp(touch, pointer, button);
+        }
+        if (state == State.GAME_OVER) {
+            buttonNewGame.touchUp(touch, pointer, button);
+        }
         return false;
     }
 
@@ -107,11 +139,50 @@ public class GameScreen extends BaseScreen {
         for (Star star : stars) {
             star.update(delta);
         }
-        bulletPool.updateActiveSprites(delta);
-        enemyPool.updateActiveSprites(delta);
         explosionPool.updateActiveSprites(delta);
-        mainShip.update(delta);
-        enemyEmitter.generate(delta);
+        if (state == State.PLAYING) {
+            mainShip.update(delta);
+            bulletPool.updateActiveSprites(delta);
+            enemyPool.updateActiveSprites(delta);
+            enemyEmitter.generate(delta);
+        }
+    }
+
+    private void checkCollision() {
+        if (state != State.PLAYING) {
+            return;
+        }
+        List<Enemy> enemyList = enemyPool.getActiveObjects();
+        List<Bullet> bulletList = bulletPool.getActiveObjects();
+        for (Enemy enemy : enemyList) {
+            float minDist = enemy.getHalfWidth() + mainShip.getHalfWidth();
+            if (mainShip.pos.dst(enemy.pos) < minDist) {
+                enemy.destroy();
+                mainShip.damage(enemy.getDamage());
+                continue;
+            }
+            for (Bullet bullet : bulletList) {
+                if (bullet.getOwner() != mainShip ||  bullet.isDestroyed()) {
+                    continue;
+                }
+                if (enemy.isBulletCollision(bullet)) {
+                    enemy.damage(bullet.getDamage());
+                    bullet.destroy();
+                }
+            }
+        }
+        for (Bullet bullet : bulletList) {
+            if (bullet.getOwner() == mainShip || bullet.isDestroyed()) {
+                continue;
+            }
+            if (mainShip.isBulletCollision(bullet)) {
+                mainShip.damage(bullet.getDamage());
+                bullet.destroy();
+            }
+        }
+        if (mainShip.isDestroyed()) {
+            state = State.GAME_OVER;
+        }
     }
 
     private void free() {
@@ -126,10 +197,23 @@ public class GameScreen extends BaseScreen {
         for (Star star : stars) {
             star.draw(batch);
         }
-        bulletPool.drawActiveSprites(batch);
-        mainShip.draw(batch);
-        enemyPool.drawActiveSprites(batch);
+        if (state == State.PLAYING) {
+            mainShip.draw(batch);
+            bulletPool.drawActiveSprites(batch);
+            enemyPool.drawActiveSprites(batch);
+        } else if (state == State.GAME_OVER) {
+            gameOver.draw(batch);
+            buttonNewGame.draw(batch);
+        }
         explosionPool.drawActiveSprites(batch);
         batch.end();
+    }
+
+    public void newGame() {
+        mainShip.newGame();
+        bulletPool.freeAllActiveObjects();
+        explosionPool.freeAllActiveObjects();
+        enemyPool.freeAllActiveObjects();
+        state = State.PLAYING;
     }
 }

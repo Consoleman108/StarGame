@@ -15,7 +15,7 @@ public class MainShip extends Ship {
     private static final float SIZE = 0.15f;
     private static final float MARGIN = 0.05f;
     private static final int INVALID_POINTER = -1;
-    private static final int HP = 100;
+    private static final int HP = 1;
 
     private int leftPointer;
     private int rightPointer;
@@ -32,12 +32,10 @@ public class MainShip extends Ship {
         bulletHeight = 0.01f;
         damage = 1;
         v0.set(0.5f, 0);
-        leftPointer = INVALID_POINTER;
-        rightPointer = INVALID_POINTER;
         reloadInterval = 0.25f;
         reloadTimer = reloadInterval;
-        hp = HP;
         sound = Gdx.audio.newSound(Gdx.files.internal("sound/sfx.mp3"));
+        newGame();
     }
 
     @Override
@@ -50,7 +48,8 @@ public class MainShip extends Ship {
     @Override
     public void update(float delta) {
         super.update(delta);
-        shoot(delta);
+        bulletPos.set(pos.x, pos.y + getHalfHeight());
+        autoShoot(delta);
         if (getLeft() < worldBounds.getLeft()) {
             stop();
             setLeft(worldBounds.getLeft());
@@ -112,7 +111,7 @@ public class MainShip extends Ship {
                 moveRight();
                 break;
             case Input.Keys.UP:
-//                shoot();
+                shoot();
                 break;
         }
         return false;
@@ -146,6 +145,14 @@ public class MainShip extends Ship {
         sound.dispose();
     }
 
+    public boolean isBulletCollision(Bullet bullet) {
+        return !(bullet.getRight() < getLeft()
+                || bullet.getLeft() > getRight()
+                || bullet.getBottom() > pos.y
+                || bullet.getTop() < getBottom()
+        );
+    }
+
     private void moveRight() {
         v.set(v0);
     }
@@ -156,5 +163,16 @@ public class MainShip extends Ship {
 
     private void stop() {
         v.setZero();
+    }
+
+    public void newGame() {
+        hp = HP;
+        pressedLeft = false;
+        pressedRight = false;
+        leftPointer = INVALID_POINTER;
+        rightPointer = INVALID_POINTER;
+        stop();
+        this.pos.x = 0;
+        flushDestroy();
     }
 }
