@@ -15,7 +15,7 @@ public class MainShip extends Ship {
     private static final float SIZE = 0.15f;
     private static final float MARGIN = 0.05f;
     private static final int INVALID_POINTER = -1;
-    private static final int HP = 1;
+    private static final int HP = 100;
 
     private int leftPointer;
     private int rightPointer;
@@ -35,7 +35,18 @@ public class MainShip extends Ship {
         reloadInterval = 0.25f;
         reloadTimer = reloadInterval;
         sound = Gdx.audio.newSound(Gdx.files.internal("sound/sfx.mp3"));
-        newGame();
+        startNewGame();
+    }
+
+    public void startNewGame() {
+        hp = HP;
+        leftPointer = INVALID_POINTER;
+        rightPointer = INVALID_POINTER;
+        pressedLeft = false;
+        pressedRight = false;
+        stop();
+        this.pos.x = 0;
+        flushDestroy();
     }
 
     @Override
@@ -163,16 +174,5 @@ public class MainShip extends Ship {
 
     private void stop() {
         v.setZero();
-    }
-
-    public void newGame() {
-        hp = HP;
-        pressedLeft = false;
-        pressedRight = false;
-        leftPointer = INVALID_POINTER;
-        rightPointer = INVALID_POINTER;
-        stop();
-        this.pos.x = 0;
-        flushDestroy();
     }
 }
